@@ -5,10 +5,18 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
+const publicUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  property: user.property,
+});
+
 // POST /api/auth/signup
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, property } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email, and password are required" });
@@ -26,11 +34,12 @@ router.post("/signup", async (req, res) => {
       email: email.toLowerCase(),
       password: hashedPassword,
       role: role === "manager" ? "manager" : "resident",
+      property: typeof property === "string" ? property.trim() : "",
     });
 
     res.status(201).json({
       message: "Account created successfully",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: publicUser(user),
     });
   } catch (err) {
     console.error(err);
@@ -66,7 +75,7 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: publicUser(user),
     });
   } catch (err) {
     console.error(err);

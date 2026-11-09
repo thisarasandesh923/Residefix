@@ -28,8 +28,12 @@
 
 ## API Endpoints
 
-- `POST /api/auth/signup` — create an account `{ name, email, password, role }`
+- `POST /api/auth/signup` — create an account `{ name, email, password, role, property? }`
 - `POST /api/auth/login` — log in `{ email, password }`, returns a JWT token
-- `POST /api/complaints` — create a complaint (requires `Authorization: Bearer <token>`)
-- `GET /api/complaints` — list complaints (residents see their own, managers see all)
-- `PATCH /api/complaints/:id` — update complaint status (manager only)
+- `GET /api/complaints` — list complaints (residents: own, managers: all); filters `?status=&category=&priority=&q=`
+- `POST /api/complaints` — create a complaint
+- `GET /api/complaints/:id` — one complaint (owner or manager)
+- `PATCH /api/complaints/:id` — residents edit details of their own open complaints; managers change `status`
+- `DELETE /api/complaints/:id` — residents withdraw their own open complaints; managers delete any
+
+Complaint routes require `Authorization: Bearer <token>`.
