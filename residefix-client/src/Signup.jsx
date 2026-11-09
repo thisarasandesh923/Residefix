@@ -10,6 +10,7 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
     role: "resident",
+    property: "",
   });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -51,6 +52,7 @@ export default function Signup() {
           email: form.email,
           password: form.password,
           role: form.role,
+          property: form.role === "resident" ? form.property : "",
         }),
       });
 
@@ -103,6 +105,20 @@ export default function Signup() {
           <option value="resident">Resident</option>
           <option value="manager">Property Manager / Landlord</option>
         </select>
+
+        {form.role === "resident" && (
+          <>
+            <label htmlFor="property">Property / room (optional)</label>
+            <input
+              id="property"
+              name="property"
+              type="text"
+              placeholder="e.g. Green Hostel, Room 12"
+              value={form.property}
+              onChange={handleChange}
+            />
+          </>
+        )}
 
         <label htmlFor="password">Password</label>
         <div className="pw-row">
