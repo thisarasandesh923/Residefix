@@ -1,5 +1,30 @@
-**/node_modules/
-**/dist/
+# Dependencies and builds
+node_modules/
+dist/
+coverage/
+
+# Local configuration and secrets (only the *.example files are committed)
+.env
+.env.*
+!.env.example
 **/.env
-**/.env.local
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+
+# Database backups and exported images
+backups/
+*.archive
+*.archive.gz
 *.zip
+*.tar
+
+# Logs and OS/editor files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

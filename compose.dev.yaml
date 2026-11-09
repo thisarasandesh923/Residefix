@@ -1,0 +1,26 @@
+# ResideFix — MongoDB for LOCAL DEVELOPMENT only.
+#
+#   docker compose -f compose.dev.yaml up -d
+#
+# Starts only MongoDB, reachable from THIS computer at mongodb://localhost:27017.
+# Run the backend (npm run dev) and frontend (npm run dev) directly with Node.
+# The port is bound to 127.0.0.1, so it is not exposed to the network.
+
+name: residefix-dev
+
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${DEV_MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo_dev_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  mongo_dev_data:
