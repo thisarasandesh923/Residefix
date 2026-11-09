@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { API_URL } from "./api";
-import "./Login.css";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { authApi } from "../services/api";
+import { saveSession } from "../services/session";
+import "../styles/Login.css";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const location = useLocation();
+  const justRegistered = Boolean(location.state?.registered);
+  const [form, setForm] = useState({ email: location.state?.email || "", password: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,8 +22,8 @@ export default function Login() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!form.password) {
+      setError("Please enter your password.");
       return;
     }
 
@@ -28,26 +31,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Login failed. Please try again.");
-        return;
-      }
-
+      const data = await authApi.login(form);
       // Save token + user info so the app knows we're logged in
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      navigate("/dashboard");
-    } catch {
-      setError("Could not reach the server. Is the backend running?");
+      saveSession(data);
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,9 +44,12 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
-        <h1>ResideFix</h1>
+      <form className="login-card" onSubmit={handleSubmit} noValidate>
+        <h1><Link to="/" className="brand-link">ResideFix</Link></h1>
         <p className="subtitle">Sign in to manage your complaints</p>
+        {justRegistered && !error && (
+          <p className="success" role="status">Account created. You can log in now.</p>
+        )}
 
         <label htmlFor="email">Email</label>
         <input
@@ -67,6 +59,7 @@ export default function Login() {
           placeholder="you@example.com"
           value={form.email}
           onChange={handleChange}
+          autoComplete="email"
           required
         />
 
@@ -79,14 +72,15 @@ export default function Login() {
             placeholder="Enter your password"
             value={form.password}
             onChange={handleChange}
+            autoComplete="current-password"
             required
           />
-          <button type="button" onClick={() => setShowPw(!showPw)}>
+          <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Hide password" : "Show password"}>
             {showPw ? "Hide" : "Show"}
           </button>
         </div>
 
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
 
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? "Logging in..." : "Log In"}

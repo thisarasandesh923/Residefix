@@ -1,7 +1,10 @@
 node_modules
 dist
+coverage
 .git
 .env
 .env.*
-!.env.example
+Dockerfile
+.dockerignore
 *.zip
+*.tar

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./Home.css";
+import "../styles/Home.css";
 
 export default function Home() {
   return (
@@ -30,7 +30,7 @@ export default function Home() {
       <section className="features">
         <div className="feature-card">
           <h3>Report Issues Fast</h3>
-          <p>Log electrical, plumbing, internet, or security issues with photos and priority tags.</p>
+          <p>Log electrical, plumbing, internet, or security issues with a category and priority tag.</p>
         </div>
         <div className="feature-card">
           <h3>Track in Real Time</h3>

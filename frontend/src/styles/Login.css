@@ -58,4 +58,5 @@ select {
   box-sizing: border-box;
   background: #fff;
 }
-.footer-text { text-align: center; font-size: 14px; }
+.footer-text { text-align: center; font-size: 14px; }.brand-link { color: inherit; text-decoration: none; }
+.link-btn { display: block; text-align: center; text-decoration: none; }

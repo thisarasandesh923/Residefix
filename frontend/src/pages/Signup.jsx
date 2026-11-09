@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { API_URL } from "./api";
-import "./Login.css";
+import { authApi } from "../services/api";
+import { MIN_PASSWORD_LENGTH } from "../constants/complaints";
+import "../styles/Login.css";
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -10,6 +11,7 @@ export default function Signup() {
     password: "",
     confirmPassword: "",
     role: "resident",
+    property: "",
   });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -30,8 +32,8 @@ export default function Signup() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (form.password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -43,28 +45,17 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: form.role,
-        }),
+      await authApi.signup({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+        property: form.role === "resident" ? form.property.trim() : "",
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Signup failed. Please try again.");
-        return;
-      }
-
       // Signup succeeded — send them to log in
-      navigate("/login");
-    } catch {
-      setError("Could not reach the server. Is the backend running?");
+      navigate("/login", { state: { registered: true, email: form.email.trim() } });
+    } catch (err) {
+      setError(err.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,8 +63,8 @@ export default function Signup() {
 
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
-        <h1>ResideFix</h1>
+      <form className="login-card" onSubmit={handleSubmit} noValidate>
+        <h1><Link to="/" className="brand-link">ResideFix</Link></h1>
         <p className="subtitle">Create your account</p>
 
         <label htmlFor="name">Full Name</label>
@@ -104,13 +95,28 @@ export default function Signup() {
           <option value="manager">Property Manager / Landlord</option>
         </select>
 
+        {form.role === "resident" && (
+          <>
+            <label htmlFor="property">Property / room (optional)</label>
+            <input
+              id="property"
+              name="property"
+              type="text"
+              placeholder="e.g. Green Hostel, Room 12"
+              value={form.property}
+              onChange={handleChange}
+            />
+          </>
+        )}
+
         <label htmlFor="password">Password</label>
         <div className="pw-row">
           <input
             id="password"
             name="password"
             type={showPw ? "text" : "password"}
-            placeholder="Create a password"
+            placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+            autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
             required
@@ -126,12 +132,13 @@ export default function Signup() {
           name="confirmPassword"
           type={showPw ? "text" : "password"}
           placeholder="Re-enter your password"
+          autoComplete="new-password"
           value={form.confirmPassword}
           onChange={handleChange}
           required
         />
 
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
 
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? "Creating account..." : "Sign Up"}
