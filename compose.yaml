@@ -1,26 +1,70 @@
+# ResideFix — lab / production deployment
+#
+#   docker compose up -d --build
+#
+# Opens the website on http://<this-pc-ip>:8080 (change with RESIDEFIX_PORT in .env).
+# Only the website port is published. The API and MongoDB stay on a private
+# Docker network that other computers cannot reach directly.
+
+name: residefix
+
 services:
   mongo:
-    image: mongo:7
+    image: mongo:7.0
     restart: unless-stopped
     volumes:
       - mongo_data:/data/db
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
   backend:
-    build: ./residefix-server
+    image: residefix/backend:latest
+    build: ./backend
     restart: unless-stopped
+    init: true
     environment:
-      MONGO_URI: mongodb://mongo:27017/residefix
+      NODE_ENV: production
       PORT: "5000"
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env before running}
-    ports:
-      - "5000:5000"
+      # "mongo" is the service name above = its hostname on the Docker network.
+      MONGO_URI: mongodb://mongo:27017/residefix
+      # Leave JWT_SECRET empty to have a strong secret generated on first start
+      # and stored in the backend_secrets volume. Or set it in the root .env.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_SECRET_FILE: /app/data/jwt_secret
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      TRUST_PROXY: "1"
+      AUTH_RATE_LIMIT: ${AUTH_RATE_LIMIT:-20}
+    volumes:
+      - backend_secrets:/app/data
+    networks: [internal]
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+
   frontend:
-    build: ./residefix-client
+    image: residefix/frontend:latest
+    build: ./frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      # 0.0.0.0 = reachable from other computers on the LAN
+      - "${RESIDEFIX_PORT:-8080}:8080"
+    networks: [internal, public]
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+
+networks:
+  # No route to the outside world; only containers of this project can use it.
+  internal:
+    internal: true
+  # Needed only so the published website port works.
+  public:
+
 volumes:
   mongo_data:
+  backend_secrets:
