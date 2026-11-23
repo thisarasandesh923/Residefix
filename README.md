@@ -55,7 +55,7 @@ layout that works on phones.
 | Frontend | React 19, React Router 7, Vite 8 — served by Nginx in production |
 | Backend | Node.js 24 LTS, Express 4, Mongoose 8, JWT, bcrypt, Helmet, express-rate-limit |
 | Database | MongoDB 7 (persistent Docker volume) |
-| DevOps | Docker multi-stage builds, Docker Compose, Nginx reverse proxy, health checks, GitHub Actions CI |
+| DevOps | Docker multi-stage builds, Docker Compose, Nginx reverse proxy, health checks, GitHub Actions CI, Jenkins CI ([docs/JENKINS.md](docs/JENKINS.md)) |
 
 ## Quick start (Docker)
 
@@ -153,7 +153,8 @@ Residefix/
 │   ├── tests/               Vitest
 │   └── Dockerfile           multi-stage: Node build → Nginx
 ├── scripts/                 start-lab, check-deployment, backup-db, restore-db (PowerShell)
-├── docs/                    ARCHITECTURE, DEVELOPMENT, LAB_DEPLOYMENT
+├── docs/                    ARCHITECTURE, DEVELOPMENT, LAB_DEPLOYMENT, JENKINS
+├── Jenkinsfile              Jenkins CI pipeline (lab PC)
 ├── compose.yaml             production / lab stack
 ├── compose.dev.yaml         MongoDB only, for local development
 └── .env.example
