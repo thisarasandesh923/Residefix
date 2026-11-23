@@ -55,6 +55,13 @@ Only things a normal lab setup already has:
 
 ## 2. Run it
 
+The pipeline runs on the lab's Docker-enabled agent **`rootless-user-agent`** (Jenkins' built-in
+node has no Docker access). To use another agent, run **Build with Parameters** and change
+`AGENT_LABEL` (for example `built-in`; the Docker stages are then skipped).
+
+> After the Jenkinsfile is first used, Jenkins turns **Build Now** into **Build with
+> Parameters**. Just click **Build** — the default agent is already filled in.
+
 1. Click **Build Now**. The first build takes a few minutes (it may download Node and the
    npm packages).
 2. Click the build number → **Console Output** to watch it.

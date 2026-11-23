@@ -23,7 +23,15 @@ def httpCheck(String url) {
 }
 
 pipeline {
-    agent any
+    // The lab's Docker-enabled agent. Jenkins' built-in node has no Docker access, so
+    // without this the Docker stages would be skipped. Change it in "Build with Parameters"
+    // (e.g. to "built-in") if the agent is offline.
+    agent { label "${params.AGENT_LABEL ?: 'rootless-user-agent'}" }
+
+    parameters {
+        string(name: 'AGENT_LABEL', defaultValue: 'rootless-user-agent',
+               description: 'Jenkins agent (node name or label) to run on')
+    }
 
     options {
         timeout(time: 30, unit: 'MINUTES')
