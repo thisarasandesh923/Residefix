@@ -13,13 +13,13 @@
 // Setup guide: docs/JENKINS.md
 
 // Runs a shell command with the downloaded Node (if any) first on PATH.
-def run(String cmd) {
+def runSh(String cmd) {
     sh(env.NODE_BIN ? "export PATH=\"${env.NODE_BIN}:\$PATH\"\n${cmd}" : cmd)
 }
 
 // Fails the build unless the URL answers with HTTP 2xx (uses Node, so curl is not needed).
 def httpCheck(String url) {
-    run """node -e "fetch('${url}').then(async r => { console.log(r.status, '${url}'); if (!r.ok) process.exit(1); }).catch(e => { console.error(e.message); process.exit(1); })" """
+    runSh """node -e "fetch('${url}').then(async r => { console.log(r.status, '${url}'); if (!r.ok) process.exit(1); }).catch(e => { console.error(e.message); process.exit(1); })" """
 }
 
 pipeline {
@@ -81,19 +81,19 @@ pipeline {
                     env.HAS_DOCKER = sh(returnStatus: true,
                         script: 'docker info >/dev/null 2>&1 && docker compose version >/dev/null 2>&1') == 0 ? 'true' : 'false'
                     if (env.HAS_DOCKER == 'true') {
-                        run 'docker compose version'
+                        runSh 'docker compose version'
                     } else {
                         echo 'Docker is not usable by the Jenkins user: Docker stages will be skipped and MongoDB API tests will report as skipped.'
                     }
                 }
-                run 'node --version && npm --version'
+                runSh 'node --version && npm --version'
             }
         }
 
         stage('Install') {
             parallel {
-                stage('Backend deps')  { steps { dir('backend')  { run 'npm ci --no-audit --no-fund' } } }
-                stage('Frontend deps') { steps { dir('frontend') { run 'npm ci --no-audit --no-fund' } } }
+                stage('Backend deps')  { steps { dir('backend')  { runSh 'npm ci --no-audit --no-fund' } } }
+                stage('Frontend deps') { steps { dir('frontend') { runSh 'npm ci --no-audit --no-fund' } } }
             }
         }
 
@@ -104,17 +104,17 @@ pipeline {
                         script {
                             if (env.HAS_DOCKER == 'true') {
                                 withEnv(["DEV_MONGO_PORT=${env.CI_MONGO_PORT}"]) {
-                                    run "docker compose -f compose.dev.yaml -p ${env.SMOKE_PROJECT}-mongo up -d --wait --wait-timeout 120"
+                                    runSh "docker compose -f compose.dev.yaml -p ${env.SMOKE_PROJECT}-mongo up -d --wait --wait-timeout 120"
                                 }
                             }
                         }
-                        dir('backend') { run 'npm test' }
+                        dir('backend') { runSh 'npm test' }
                     }
                     post {
                         always {
                             script {
                                 if (env.HAS_DOCKER == 'true') {
-                                    run "docker compose -f compose.dev.yaml -p ${env.SMOKE_PROJECT}-mongo down -v"
+                                    runSh "docker compose -f compose.dev.yaml -p ${env.SMOKE_PROJECT}-mongo down -v"
                                 }
                             }
                         }
@@ -123,9 +123,9 @@ pipeline {
                 stage('Frontend lint, test, build') {
                     steps {
                         dir('frontend') {
-                            run 'npm run lint'
-                            run 'npm test'
-                            run 'npm run build'
+                            runSh 'npm run lint'
+                            runSh 'npm test'
+                            runSh 'npm run build'
                         }
                     }
                     post {
@@ -138,7 +138,7 @@ pipeline {
         stage('Docker build') {
             when { environment name: 'HAS_DOCKER', value: 'true' }
             steps {
-                run 'docker compose build'
+                runSh 'docker compose build'
             }
         }
 
@@ -146,16 +146,16 @@ pipeline {
             when { environment name: 'HAS_DOCKER', value: 'true' }
             steps {
                 withEnv(["RESIDEFIX_PORT=${env.SMOKE_PORT}"]) {
-                    run "docker compose -p ${env.SMOKE_PROJECT} up -d --wait --wait-timeout 180"
+                    runSh "docker compose -p ${env.SMOKE_PROJECT} up -d --wait --wait-timeout 180"
                 }
                 httpCheck "http://localhost:${env.SMOKE_PORT}/"
                 httpCheck "http://localhost:${env.SMOKE_PORT}/dashboard"
                 httpCheck "http://localhost:${env.SMOKE_PORT}/api/health/ready"
             }
             post {
-                failure { run "docker compose -p ${env.SMOKE_PROJECT} logs --tail 100" }
+                failure { runSh "docker compose -p ${env.SMOKE_PROJECT} logs --tail 100" }
                 // -v is safe here: this is the throwaway CI project, not real data.
-                always  { run "docker compose -p ${env.SMOKE_PROJECT} down -v" }
+                always  { runSh "docker compose -p ${env.SMOKE_PROJECT} down -v" }
             }
         }
     }
