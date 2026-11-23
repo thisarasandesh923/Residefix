@@ -40,8 +40,9 @@ pipeline {
     }
 
     triggers {
-        // The lab PC is usually not reachable from GitHub, so poll instead of using a webhook.
-        pollSCM('H/5 * * * *')
+        // The lab PC is not reachable from GitHub, so poll instead of using a webhook.
+        // Set here, not in the job's Configure page: each run resets triggers to this value.
+        pollSCM('* * * * *')   // every minute
     }
 
     environment {

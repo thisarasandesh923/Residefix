@@ -5,7 +5,7 @@ the lab PC's existing Jenkins (<http://localhost:8080>) and is built for a **loc
 no `sudo`, no software installs and no extra Jenkins plugins are needed.
 
 ```text
-git push ──► GitHub ◄── checks every 5 min ── Jenkins on the lab PC (http://localhost:8080)
+git push ──► GitHub ◄── checks every minute ── Jenkins on the lab PC (http://localhost:8080)
                                                  │
    Tools ─► Install ─► Test ───────────────► Docker build ─► Smoke test
    Node     npm ci     backend + frontend      (only if the Jenkins user can use Docker)
@@ -67,7 +67,7 @@ node has no Docker access). To use another agent, run **Build with Parameters** 
 2. Click the build number → **Console Output** to watch it.
 3. A green build means every stage passed or was skipped on purpose.
 
-After this first manual build Jenkins checks GitHub every 5 minutes (`pollSCM` in the
+After this first manual build Jenkins checks GitHub every minute (`pollSCM` in the
 Jenkinsfile) and builds automatically when someone pushes to that branch.
 
 **Several branches:** if *Multibranch Pipeline* is in the *New Item* list, you can use it
@@ -82,5 +82,5 @@ otherwise run* (5 minutes). Jenkins then builds every branch that has a `Jenkins
 
 | Docker stages skipped but you want them | The `jenkins` user must be in the `docker` group (needs an admin): `sudo usermod -aG docker jenkins`, then restart Jenkins. |
 | `port is already allocated` on 18080 or 27027 | A previous build left containers behind: `docker compose -p residefix-ci down -v` and `docker compose -p residefix-ci-mongo down -v`. |
-| Builds never start by themselves | Run **Build Now** once (the 5-minute check is registered by the first build), and check the lab PC can reach github.com. |
+| Builds never start by themselves | Run **Build Now** once (the polling is registered by the first build), and check the lab PC can reach github.com. |
 | Want to run ResideFix itself on the lab PC | Jenkins uses 8080, so start ResideFix on another port: `RESIDEFIX_PORT=8081 docker compose up -d --build`. |
