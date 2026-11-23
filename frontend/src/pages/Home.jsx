@@ -43,7 +43,7 @@ export default function Home() {
       </section>
 
       <footer className="home-footer">
-        <p>&copy; 2026 ResideFix &#8212; Devops Engineering Module Project</p>
+        <p>&copy; 2026 ResideFix &#8212; DevOps Engineering Module Project &#183; Built and tested by Jenkins CI</p>
       </footer>
     </div>
   );
