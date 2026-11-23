@@ -65,13 +65,13 @@ pipeline {
                                 aarch64|arm64) ARCH=arm64 ;;
                                 *) echo "Unsupported CPU: \$(uname -m)"; exit 1 ;;
                               esac
-                              URL="https://nodejs.org/dist/v${env.NODE_VERSION}/node-v${env.NODE_VERSION}-linux-\$ARCH.tar.xz"
+                              URL="https://nodejs.org/dist/v${env.NODE_VERSION}/node-v${env.NODE_VERSION}-linux-\$ARCH.tar.gz"
                               echo "Downloading \$URL"
-                              mkdir -p "${nodeDir}.tmp"
-                              if command -v curl >/dev/null; then curl -fsSL "\$URL" -o node.tar.xz
-                              else wget -q "\$URL" -O node.tar.xz; fi
-                              tar -xJf node.tar.xz -C "${nodeDir}.tmp" --strip-components=1
-                              rm -f node.tar.xz
+                              rm -rf "${nodeDir}.tmp" && mkdir -p "${nodeDir}.tmp"
+                              if command -v curl >/dev/null; then curl -fsSL "\$URL" -o node.tar.gz
+                              else wget -q "\$URL" -O node.tar.gz; fi
+                              tar -xzf node.tar.gz -C "${nodeDir}.tmp" --strip-components=1
+                              rm -f node.tar.gz
                               rm -rf "${nodeDir}" && mv "${nodeDir}.tmp" "${nodeDir}"
                             fi
                         """

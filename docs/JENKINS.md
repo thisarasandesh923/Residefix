@@ -35,7 +35,7 @@ Only things a normal lab setup already has:
 - Jenkins running (<http://localhost:8080>) with the standard **Pipeline** and **Git** plugins
   (installed by *Install suggested plugins*).
 - Internet access to github.com, nodejs.org and registry.npmjs.org.
-- `tar` with `xz` support and `curl` or `wget` (standard on Ubuntu) — only used if Node is missing.
+- `tar` and `curl` or `wget` (standard on Ubuntu) — only used if Node is missing.
 
 ## 1. Create the job (once)
 
@@ -72,7 +72,7 @@ otherwise run* (5 minutes). Jenkins then builds every branch that has a `Jenkins
 | Problem | Fix |
 |---------|-----|
 | `Could not resolve host` / download fails in *Tools* or *Install* | The lab network blocks nodejs.org or the npm registry. Ask whether a proxy is required. |
-| `tar: ... xz: Cannot exec` | Missing `xz`. Ask the lab admin for `xz-utils`, or for Node.js 22+ to be installed system-wide. |
+
 | Docker stages skipped but you want them | The `jenkins` user must be in the `docker` group (needs an admin): `sudo usermod -aG docker jenkins`, then restart Jenkins. |
 | `port is already allocated` on 18080 or 27027 | A previous build left containers behind: `docker compose -p residefix-ci down -v` and `docker compose -p residefix-ci-mongo down -v`. |
 | Builds never start by themselves | Run **Build Now** once (the 5-minute check is registered by the first build), and check the lab PC can reach github.com. |
